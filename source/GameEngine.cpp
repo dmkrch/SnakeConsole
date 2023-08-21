@@ -2,6 +2,7 @@
 
 #include <thread>
 #include <optional>
+#include <conio.h>
 
 bool GameEngine::InvokeActions()
 {
@@ -14,36 +15,94 @@ bool GameEngine::InvokeActions()
 	return true;
 }
 
-std::optional<MovementDirection> GameEngine::GetNewDirection()
+void GameEngine::StartSettingDirection(bool isGameContinues)
 {
-	std::optional<MovementDirection> newDirection;
-
-	auto waitForKeyPress = []()
+	auto IsArrowWasPressed = [](int keyCode)
 	{
-
+		return keyCode == static_cast<int>(MovementDirection::Up) ||
+			keyCode == static_cast<int>(MovementDirection::Down) ||
+			keyCode == static_cast<int>(MovementDirection::Left) ||
+			keyCode == static_cast<int>(MovementDirection::Right);
 	};
 
-	return newDirection;
+	auto getKeyPressed = [&, this]()
+	{
+		int keyPressedCode = 0;
+
+		while (isGameContinues)
+		{
+			// get the code of pressed key
+			keyPressedCode = _getch();
+
+			// if arrow was not pressed - skip
+			if (!IsArrowWasPressed(keyPressedCode))
+				continue;
+
+			// get current direction; snake can't move to opposite direction
+			auto currentDirection = m_map->GetSnakeDirection();
+
+			switch (currentDirection)
+			{
+			case MovementDirection::Down:
+			{
+				if (keyPressedCode == static_cast<int>(MovementDirection::Up))
+					continue;
+				break;
+			}
+			case MovementDirection::Up:
+			{
+				if (keyPressedCode == static_cast<int>(MovementDirection::Down))
+					continue;
+				break;
+			}
+			case MovementDirection::Right:
+			{
+				if (keyPressedCode == static_cast<int>(MovementDirection::Left))
+					continue;
+
+				break;
+			}
+			case MovementDirection::Left:
+			{
+				if (keyPressedCode == static_cast<int>(MovementDirection::Right))
+					continue;
+
+				break;
+			}
+			default:
+			{
+				continue;
+			}
+			}
+
+			// set new direction
+			m_map->SetSnakeDirection(static_cast<MovementDirection>(keyPressedCode));
+		}
+	};
+
+	std::thread keyThread(getKeyPressed);
 }
 
 bool GameEngine::Start()
 {
 	bool isGameContinues = true;
 
-	MovementDirection direction = MovementDirection::Nothing;
+	StartSettingDirection(isGameContinues);
 
 	while (isGameContinues)
 	{
 		// 1. Make a movement of snake
-		m_map->MoveSnake(direction);
+		m_map->MoveSnake();
 
-		// 2. Make the actions
+		// 2. Make the actions: check for food, check for head hitting the body, etc (implemented in future - checking for enemies)
 		if (!InvokeActions())
+		{
 			isGameContinues = false;
-		
-		// 3. If ok - get new direction
-		if (auto newDirection = GetNewDirection())
-			direction = newDirection.value();
+			break;
+		}
+
+		// set delay 0.5 seconds to main thread
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	}
 
 	return isGameContinues;
@@ -57,5 +116,16 @@ void GameEngine::RegisterNewAction(std::function<bool(std::unique_ptr<MapHolder>
 GameEngine::GameEngine()
 	: m_map(std::make_unique<MapHolder>(15, 15))
 {
-	// init
+	// snake can eat food
+	RegisterNewAction([](std::unique_ptr<MapHolder>& map) -> bool
+	{
+		map->SnakeEatFoodAction();
+		return true;
+	});
+
+	// snake head can't touch it's body
+	RegisterNewAction([](std::unique_ptr<MapHolder>& map) -> bool
+	{
+		return map->IsSnakeHeadHitsBody() ? false : true;
+	});
 }

@@ -2,6 +2,7 @@
 
 #include "Object2D.h"
 
+// snake's food to grow in size
 class Food : public Object2D
 {
 	using base_t = Object2D;

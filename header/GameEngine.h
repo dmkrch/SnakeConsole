@@ -7,6 +7,7 @@
 #include "Snake.h"
 #include "MapHolder.h"
 
+// main engine of application
 class GameEngine
 {
 public:
@@ -22,8 +23,8 @@ private:
 	// invokes registered actions one by one
 	bool InvokeActions();
 
-	// creates new thread for key press tracking; returns new direction
-	std::optional<MovementDirection> GetNewDirection();
+	// creates new thread for key press tracking; sets new direction to snake
+	void StartSettingDirection(bool isGameContinues);
 
 private:
 	std::vector<std::function<bool(std::unique_ptr<MapHolder> &)>> m_actions;

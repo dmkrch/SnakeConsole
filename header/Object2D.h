@@ -1,11 +1,14 @@
 #pragma once
 
+// type of objects in game
 enum class ObjectType
 {
 	SnakeCell,
 	Food,
+	Enemy,
 };
 
+// base abstract class to every object in game
 class Object2D
 {
 public:
