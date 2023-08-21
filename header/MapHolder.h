@@ -15,7 +15,10 @@ public:
 	// moves the snake due to direction
 	void MoveSnake(const MovementDirection & direction);
 
+	// prints single objects like food, enemies etc.
 	void PrintObjectsOnMap();
+
+	// prints only snake on map
 	void PrintSnake();
 
 private:

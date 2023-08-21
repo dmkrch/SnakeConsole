@@ -1,9 +1,9 @@
 #include <iostream>
 
-#include "GameEngine.h"
+#include "./header/GameEngine.h"
 
 int main()
-{
+{	
 	GameEngine engine;
 
 	// snake head can't touch it's body

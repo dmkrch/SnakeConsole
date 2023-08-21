@@ -3,7 +3,6 @@
 enum class ObjectType
 {
 	SnakeCell,
-	Snake,
 	Food,
 };
 

@@ -1,7 +1,5 @@
-#include "MapHolder.h"
-
-#include <windows.h>
-#include <stdio.h>
+#include "../header/MapHolder.h"
+#include <curses.h>
 
 MapHolder::MapHolder(int xSize, int ySize)
 {
@@ -20,7 +18,7 @@ void MapHolder::PrintObjectsOnMap()
 	int y = 0;
 	char ch = '*';
 
-	for (const auto & obj : m_objects)
+	for (auto & obj : m_objects)
 	{
 		x = obj->GetX();
 		y = obj->GetY();
@@ -30,11 +28,12 @@ void MapHolder::PrintObjectsOnMap()
 			switch (obj->GetType())
 			{
 			case ObjectType::Food:
-				ch = '1';
-				break;
-			case ObjectType::SnakeCell:
-				ch = '*';
-				break;
+			{
+				auto foodObj = dynamic_cast<Food *>(obj.get());
+
+				constexpr int static asciiZero = 48;
+				ch = static_cast<char>(foodObj->GetFoodValue() + asciiZero);
+			}
 			default:
 				return;
 			}
@@ -55,27 +54,7 @@ void MapHolder::PrintSnake()
 
 void MapHolder::PrintCharacter(int xCoord, int yCoord, char ch)
 {
-	HANDLE screenBuffer = CreateConsoleScreenBuffer(
-		GENERIC_READ | GENERIC_WRITE,
-		FILE_SHARE_READ | FILE_SHARE_WRITE,
-		NULL,
-		CONSOLE_TEXTMODE_BUFFER,
-		NULL);
+	mvaddch(xCoord, yCoord, ch);
 
-	if (screenBuffer == INVALID_HANDLE_VALUE)
-	{
-		printf("CreateConsoleScreenBuffer failed - (%d)\n", GetLastError());
-		return;
-	}
-
-	if (!SetConsoleActiveScreenBuffer(screenBuffer))
-	{
-		printf("SetConsoleActiveScreenBuffer failed - (%d)\n", GetLastError());
-		CloseHandle(screenBuffer);
-		return;
-	}
-
-	const char* charact = &ch;
-	DWORD numCharsWritten;
-	WriteConsoleOutputCharacter(screenBuffer, LPCWSTR(charact), 1, COORD{short(xCoord), short(yCoord)}, &numCharsWritten);
+	refresh();
 }
