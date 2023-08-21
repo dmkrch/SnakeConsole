@@ -8,10 +8,10 @@
 // direction of objects' movement; value is pared with arrow's ascii code on keyboard
 enum class MovementDirection
 {
-	Up = 72,
-	Down = 80,
-	Right = 77,
-	Left = 75,
+	Up = 119, // w small
+	Down = 115,
+	Right = 100,
+	Left = 97,
 	Nothing = 0,
 };
 
@@ -47,6 +47,8 @@ public:
 
 	void SetDirection(const MovementDirection& direction);
 	MovementDirection GetDirection() const;
+
+	int GetSize() const;
 
 private:
 	// snake head and it's body; snake's head is m_cells[0]

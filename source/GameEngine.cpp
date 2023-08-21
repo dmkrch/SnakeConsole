@@ -2,37 +2,41 @@
 
 #include <thread>
 #include <optional>
-#include <conio.h>
+#include <curses.h>
+#include <math.h>
+#include "GameEngine.h"
 
 bool GameEngine::InvokeActions()
 {
 	for (const auto & action : m_actions)
 	{
 		if (!action(m_map))
-			false;
+			return false;
 	}
 
 	return true;
 }
 
-void GameEngine::StartSettingDirection(bool isGameContinues)
+bool GameEngine::Start()
 {
-	auto IsArrowWasPressed = [](int keyCode)
-	{
-		return keyCode == static_cast<int>(MovementDirection::Up) ||
-			keyCode == static_cast<int>(MovementDirection::Down) ||
-			keyCode == static_cast<int>(MovementDirection::Left) ||
-			keyCode == static_cast<int>(MovementDirection::Right);
-	};
+	bool isGameContinues = true;
 
-	auto getKeyPressed = [&, this]()
+	auto func = [this]()
 	{
+		auto IsArrowWasPressed = [](int keyCode)
+		{
+			return keyCode == static_cast<int>(MovementDirection::Up) ||
+				keyCode == static_cast<int>(MovementDirection::Down) ||
+				keyCode == static_cast<int>(MovementDirection::Left) ||
+				keyCode == static_cast<int>(MovementDirection::Right);
+		};
+
 		int keyPressedCode = 0;
 
-		while (isGameContinues)
+		while (true)
 		{
 			// get the code of pressed key
-			keyPressedCode = _getch();
+			keyPressedCode = getch();
 
 			// if arrow was not pressed - skip
 			if (!IsArrowWasPressed(keyPressedCode))
@@ -79,31 +83,20 @@ void GameEngine::StartSettingDirection(bool isGameContinues)
 			m_map->SetSnakeDirection(static_cast<MovementDirection>(keyPressedCode));
 		}
 	};
-
-	std::thread keyThread(getKeyPressed);
-}
-
-bool GameEngine::Start()
-{
-	bool isGameContinues = true;
-
-	StartSettingDirection(isGameContinues);
+	
+	std::thread keyThread(func);
 
 	while (isGameContinues)
 	{
-		// 1. Make a movement of snake
-		m_map->MoveSnake();
-
-		// 2. Make the actions: check for food, check for head hitting the body, etc (implemented in future - checking for enemies)
+		// Invoke the registered actions
 		if (!InvokeActions())
-		{
 			isGameContinues = false;
-			break;
-		}
 
-		// set delay 0.5 seconds to main thread
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		// delay is set according to snake size
+		std::this_thread::sleep_for(std::chrono::milliseconds(int(500 * pow(0.9, (float)m_map->GetSnakeSize()))));
 	}
+
+	keyThread.join();
 
 	return isGameContinues;
 }
@@ -116,10 +109,28 @@ void GameEngine::RegisterNewAction(std::function<bool(std::unique_ptr<MapHolder>
 GameEngine::GameEngine()
 	: m_map(std::make_unique<MapHolder>(15, 15))
 {
+	// setting up ncurses lib's window
+	initscr();
+	noecho();
+
+	// snake can eat food
+	RegisterNewAction([](std::unique_ptr<MapHolder>& map) -> bool
+	{
+		map->MoveSnake();
+		return true;
+	});
+
 	// snake can eat food
 	RegisterNewAction([](std::unique_ptr<MapHolder>& map) -> bool
 	{
 		map->SnakeEatFoodAction();
+		return true;
+	});
+
+	// print all objects
+	RegisterNewAction([](std::unique_ptr<MapHolder>& map) -> bool
+	{
+		map->PrintObjectsOnMap();
 		return true;
 	});
 
@@ -128,4 +139,9 @@ GameEngine::GameEngine()
 	{
 		return map->IsSnakeHeadHitsBody() ? false : true;
 	});
+}
+
+GameEngine::~GameEngine()
+{
+	endwin();
 }

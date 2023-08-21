@@ -1,9 +1,10 @@
 #include "../header/Snake.h"
 
 #include <algorithm>
+#include "Snake.h"
 
 Snake::Snake()
-	: m_direction(MovementDirection::Nothing)
+	: m_direction(MovementDirection::Right)
 {
 	// create head of snake
 	m_cells.emplace_back(0, 0);
@@ -121,6 +122,11 @@ void Snake::SetDirection(const MovementDirection & direction)
 MovementDirection Snake::GetDirection() const
 {
 	return m_direction;
+}
+
+int Snake::GetSize() const
+{
+	return m_cells.size();
 }
 
 ObjectType SnakeCell::GetType() const

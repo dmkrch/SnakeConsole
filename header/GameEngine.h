@@ -12,6 +12,7 @@ class GameEngine
 {
 public:
 	GameEngine();
+	~GameEngine();
 
 	// starts the main cycle of game: movement and other things
 	bool Start();
@@ -22,9 +23,6 @@ public:
 private:
 	// invokes registered actions one by one
 	bool InvokeActions();
-
-	// creates new thread for key press tracking; sets new direction to snake
-	void StartSettingDirection(bool isGameContinues);
 
 private:
 	std::vector<std::function<bool(std::unique_ptr<MapHolder> &)>> m_actions;

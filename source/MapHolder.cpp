@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <curses.h>
+#include "MapHolder.h"
 
 MapHolder::MapHolder(int xSize, int ySize)
 	: m_xSize(xSize)
@@ -17,6 +18,9 @@ void MapHolder::MoveSnake()
 
 void MapHolder::PrintObjectsOnMap()
 {
+	// clear screen
+	clear();
+
 	// print snake
 	m_snake.ForEachCell([this](const SnakeCell & cell)
 	{
@@ -34,26 +38,26 @@ void MapHolder::PrintObjectsOnMap()
 		y = obj->GetY();
 
 		if (!obj)
+			continue;
+
+		switch (obj->GetType())
 		{
-			switch (obj->GetType())
-			{
-			case ObjectType::Food:
-			{
-				auto foodObj = dynamic_cast<Food *>(obj.get());
+		case ObjectType::Food:
+		{
+			auto foodObj = dynamic_cast<Food *>(obj.get());
 
-				constexpr int static asciiZero = 48;
-				ch = static_cast<char>(foodObj->GetFoodValue() + asciiZero);
-				break;
-			}
-			default:
-			{
-				return;	
-			}
-			}
-
-			// now print in x, y coordinates of terminal ch character
-			PrintCharacter(x, y, ch);
+			constexpr int static asciiZero = 48;
+			ch = static_cast<char>(foodObj->GetFoodValue() + asciiZero);
+			break;
 		}
+		default:
+		{
+			return;	
+		}
+		}
+
+		// now print in x, y coordinates of terminal ch character
+		PrintCharacter(x, y, ch);
 	}
 }
 
@@ -102,19 +106,27 @@ MovementDirection MapHolder::GetSnakeDirection() const
 	return m_snake.GetDirection();
 }
 
+int MapHolder::GetSnakeSize() const
+{
+	m_snake.GetSize();
+}
+
 void MapHolder::Init()
 {
 	// add some food to map
 	m_othersObjects.emplace_back(std::make_unique<Food>(7, 7));
-	m_othersObjects.emplace_back(std::make_unique<Food>(12, 11));
-	m_othersObjects.emplace_back(std::make_unique<Food>(3, 7));
-	m_othersObjects.emplace_back(std::make_unique<Food>(8, 13));
+	m_othersObjects.emplace_back(std::make_unique<Food>(12, 11, 2));
+	m_othersObjects.emplace_back(std::make_unique<Food>(3, 7, 3));
+	m_othersObjects.emplace_back(std::make_unique<Food>(14, 13, 5));
+	m_othersObjects.emplace_back(std::make_unique<Food>(8, 2, 2));
+	m_othersObjects.emplace_back(std::make_unique<Food>(3, 11, 1));
+	m_othersObjects.emplace_back(std::make_unique<Food>(11, 7, 4));
 
 	// todo: add inital enemies to map
 }
 
 void MapHolder::PrintCharacter(int xCoord, int yCoord, char ch)
 {
-	mvaddch(xCoord, yCoord, ch);
+	mvaddch(yCoord, xCoord, ch);
 	refresh();
 }

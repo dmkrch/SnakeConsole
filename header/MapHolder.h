@@ -28,6 +28,8 @@ public:
 	void SetSnakeDirection(const MovementDirection & direction);
 	MovementDirection GetSnakeDirection() const;
 
+	int GetSnakeSize() const;
+
 private:
 	void Init();
 
