@@ -121,6 +121,10 @@ void MapHolder::Init()
 	m_othersObjects.emplace_back(std::make_unique<Food>(8, 2, 2));
 	m_othersObjects.emplace_back(std::make_unique<Food>(3, 11, 1));
 	m_othersObjects.emplace_back(std::make_unique<Food>(11, 7, 4));
+	m_othersObjects.emplace_back(std::make_unique<Food>(12, 7, 4));
+	m_othersObjects.emplace_back(std::make_unique<Food>(13, 7, 4));
+	m_othersObjects.emplace_back(std::make_unique<Food>(14, 7, 4));
+	m_othersObjects.emplace_back(std::make_unique<Food>(15, 7, 4));
 
 	// todo: add inital enemies to map
 }

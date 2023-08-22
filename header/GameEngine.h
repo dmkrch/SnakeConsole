@@ -24,8 +24,12 @@ private:
 	// invokes registered actions one by one
 	bool InvokeActions();
 
+	// starts new thread to update direction
+	bool UpdateDirection() const;
+
 private:
 	std::vector<std::function<bool(std::unique_ptr<MapHolder> &)>> m_actions;
 	std::unique_ptr<MapHolder> m_map;
+	bool m_isGameContinues = true;
 };
 
